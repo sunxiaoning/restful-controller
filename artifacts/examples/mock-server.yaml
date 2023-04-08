@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mock-server
+spec:
+  replicas: 2
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+  minReadySeconds: 1
+  paused: false
+  selector:
+    matchLabels:
+      github.xiaoning.sun/name: mock
+  template:
+    metadata:
+      labels:
+        github.xiaoning.sun/name: mock
+    spec:
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: mock-server
+          command:
+            - /bin/sh
+            - -c
+            - exec /mock-server -c /opt/mock/.mock.yaml
+          volumeMounts:
+            - name: mock-server-volume
+              mountPath: /opt/mock
+          image: registry.cn-shanghai.aliyuncs.com/sxn_alpha/mock-server:v1.3
+          ports:
+            - containerPort: 8080
+              name: http-web-svc
+          livenessProbe:
+            httpGet:
+              path: /healthy
+              port: http-web-svc
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 1
+            failureThreshold: 3
+            terminationGracePeriodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthy
+              port: http-web-svc
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 1
+            failureThreshold: 1
+      volumes:
+        - name: mock-server-volume
+          configMap:
+            name: mock-server-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mock-service
+spec:
+  selector:
+    github.xiaoning.sun/name: mock
+  ports:
+    - name: http-port
+      protocol: TCP
+      port: 80
+      targetPort: http-web-svc

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: example-pod
+spec:
+  containers:
+    - name: executor
+      command:
+        - /bin/sh
+        - -c
+        - /executor --url=http://mock-service/api/v1/demo --method=get
+      env:
+        - name: ENV_LOG_FILE
+          value: /home/data/test.log
+        - name: ENV_DATA_FILE
+          value: /home/data/test.json
+#        - name: TZ
+#          value: America/Los_Angeles
+      image: registry.cn-shanghai.aliyuncs.com/sxn_alpha/restful-executor:v1.0
+      imagePullPolicy: Always
+      volumeMounts:
+        - mountPath: "/home/data"
+          name: mypd
+
+  restartPolicy: Never
+  imagePullSecrets:
+    - name: aliocr3621
+  volumes:
+    - name: mypd
+      persistentVolumeClaim:
+        claimName: test-nfs

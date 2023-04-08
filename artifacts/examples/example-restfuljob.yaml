@@ -1,0 +1,8 @@
+apiVersion: restfulcontroller.github.com.sunxiaoning/v1alpha1
+kind: RestfulJob
+metadata:
+  name: example-restfuljob
+spec:
+  url: http://localhost:8080?expansion_group=&is_finished=0&operator=xiaoning.sun&approve=0&page_index=1&page_size=20
+  method: GET
+  headers: []
